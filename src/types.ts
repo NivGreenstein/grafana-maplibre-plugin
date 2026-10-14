@@ -64,6 +64,8 @@ export interface MapOptions {
   showZoom: boolean;
   showScale: boolean;
   tileDebug: boolean;
+  // Shown where no tiles are drawn.
+  background: string;
   tooltip: 'none' | 'hover' | 'click';
   sources: SourceLayer[];
   headers: HeaderRow[];

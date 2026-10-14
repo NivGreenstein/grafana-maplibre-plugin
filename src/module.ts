@@ -64,6 +64,13 @@ export const plugin = new PanelPlugin<MapOptions>(MapPanel)
       })
       .addBooleanSwitch({ path: 'showZoom', name: 'Zoom buttons', category: view, defaultValue: true })
       .addBooleanSwitch({ path: 'showScale', name: 'Scale bar', category: view, defaultValue: false })
+      .addColorPicker({
+        path: 'background',
+        name: 'Background',
+        description: 'Shown where no tiles are drawn.',
+        category: view,
+        defaultValue: 'white',
+      })
       .addBooleanSwitch({
         path: 'tileDebug',
         name: 'Tile grid',
