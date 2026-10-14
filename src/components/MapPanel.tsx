@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import type { GrafanaTheme2, PanelProps } from '@grafana/data';
-import { Alert, useStyles2, useTheme2 } from '@grafana/ui';
+import { Alert, Button, IconButton, Stack, Toggletip, useStyles2, useTheme2 } from '@grafana/ui';
 import {
   Map as MapLibreMap,
   NavigationControl,
@@ -38,7 +38,27 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
     pointerEvents: 'none',
   }),
-  messages: css({ position: 'absolute', top: theme.spacing(1), right: theme.spacing(1), maxWidth: '60%', zIndex: 2 }),
+  // Kept inside the panel so the close button stays reachable.
+  messages: css({
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    left: theme.spacing(1),
+    maxHeight: `calc(100% - ${theme.spacing(2)})`,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    zIndex: 2,
+    '& > div': { maxWidth: 480, maxHeight: '100%', overflowY: 'auto', overflowWrap: 'anywhere', margin: 0 },
+  }),
+  compact: css({
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    zIndex: 2,
+    background: theme.colors.background.primary,
+    borderRadius: theme.shape.radius.default,
+  }),
+  messageList: css({ maxWidth: 320, overflowWrap: 'anywhere' }),
 });
 
 const clampBounds = (bounds: Bounds, worldCrs: WorldCrs): LngLatBoundsLike => {
@@ -260,6 +280,7 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
   // Closing hides the messages shown; a new or changed message shows again.
   const messageKey = messages.join('\n');
   const [dismissed, setDismissed] = useState('');
+  const small = width < 360 || height < 200;
 
   return (
     <div className={styles.wrapper} style={{ width, height }}>
@@ -268,15 +289,43 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
         style={{ width, height, background: theme.visualization.getColorByName(options.background ?? 'white') }}
       />
       {activeCrs && <div className={styles.badge}>{quadLabel[activeCrs]}</div>}
-      {messages.length > 0 && messageKey !== dismissed && (
-        <div className={styles.messages}>
-          <Alert severity="warning" title="Map" onRemove={() => setDismissed(messageKey)}>
-            {messages.map((message) => (
-              <div key={message}>{message}</div>
-            ))}
-          </Alert>
-        </div>
-      )}
+      {messages.length > 0 &&
+        messageKey !== dismissed &&
+        (small ? (
+          // A small panel shows a button that opens the messages, so the map stays visible.
+          <div className={styles.compact}>
+            <Toggletip
+              title="Map"
+              closeButton={false}
+              content={
+                <Stack direction="column" gap={1}>
+                  <div className={styles.messageList}>
+                    {messages.map((message) => (
+                      <div key={message}>{message}</div>
+                    ))}
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => setDismissed(messageKey)}>
+                    Dismiss
+                  </Button>
+                </Stack>
+              }
+            >
+              <IconButton
+                name="exclamation-triangle"
+                variant="secondary"
+                tooltip={`${messages.length} map message(s)`}
+              />
+            </Toggletip>
+          </div>
+        ) : (
+          <div className={styles.messages}>
+            <Alert severity="warning" title="Map" onRemove={() => setDismissed(messageKey)}>
+              {messages.map((message) => (
+                <div key={message}>{message}</div>
+              ))}
+            </Alert>
+          </div>
+        ))}
       {hover && <Tooltip hover={hover} frames={data.series} />}
     </div>
   );

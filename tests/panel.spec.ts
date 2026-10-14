@@ -38,3 +38,18 @@ test('closes the shared-CRS warning', async ({ gotoDashboardPage, readProvisione
   await page.getByRole('alert', { name: 'Map' }).getByRole('button', { name: 'Close alert' }).click();
   await expect(warning).toHaveCount(0);
 });
+
+test('dismisses messages from the compact button of a small panel', async ({
+  gotoDashboardPage,
+  readProvisionedDashboard,
+  page,
+}) => {
+  const dashboard = await readProvisionedDashboard({ fileName: 'maplibre-3857.json' });
+  await gotoDashboardPage(dashboard);
+  const panel = page.getByTestId('data-testid Panel header Small mixed panel');
+  const button = panel.getByRole('button', { name: /map message/ });
+  await expect(button).toBeVisible({ timeout: 15000 });
+  await button.click();
+  await page.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(button).toHaveCount(0);
+});

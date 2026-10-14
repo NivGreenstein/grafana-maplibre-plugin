@@ -40,9 +40,7 @@
             "name": "NASA GIBS Blue Marble",
             "kind": "wmts",
             "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
-            "selected": [
-              "BlueMarble_ShadedRelief_Bathymetry"
-            ],
+            "selected": ["BlueMarble_ShadedRelief_Bathymetry"],
             "visible": true,
             "opacity": 1
           }
@@ -126,9 +124,7 @@
             "name": "NASA GIBS Blue Marble",
             "kind": "wmts",
             "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
-            "selected": [
-              "BlueMarble_ShadedRelief_Bathymetry"
-            ],
+            "selected": ["BlueMarble_ShadedRelief_Bathymetry"],
             "visible": true,
             "opacity": 1
           }
