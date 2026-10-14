@@ -1,0 +1,90 @@
+# Builds, tests and packages the plugin. Called by CI and by release-please, and runnable by hand.
+name: Build
+
+on:
+  workflow_call:
+    outputs:
+      plugin-id:
+        value: ${{ jobs.build.outputs.plugin-id }}
+      plugin-version:
+        value: ${{ jobs.build.outputs.plugin-version }}
+      archive:
+        description: The packaged zip, uploaded as an artifact of the same name.
+        value: ${{ jobs.build.outputs.archive }}
+    secrets:
+      GRAFANA_ACCESS_POLICY_TOKEN:
+        required: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, lint, test and package
+    runs-on: ubuntu-latest
+    outputs:
+      plugin-id: ${{ steps.metadata.outputs.plugin-id }}
+      plugin-version: ${{ steps.metadata.outputs.plugin-version }}
+      archive: ${{ steps.metadata.outputs.archive }}
+    env:
+      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check types
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test:ci
+
+      # Builds dist/, signs it when GRAFANA_ACCESS_POLICY_TOKEN is set, and zips it into artifacts/.
+      - name: Build and package
+        run: npm run package
+        env:
+          ROOT_URLS: ${{ vars.GRAFANA_ROOT_URLS }}
+
+      - name: Get plugin metadata
+        id: metadata
+        run: |
+          id=$(jq -r .id dist/plugin.json)
+          version=$(jq -r .info.version dist/plugin.json)
+          {
+            echo "plugin-id=$id"
+            echo "plugin-version=$version"
+            echo "archive=$id-$version.zip"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check plugin.json
+        run: |
+          docker run --pull=always -v "$PWD/artifacts/$ARCHIVE:/archive.zip" \
+            grafana/plugin-validator-cli -analyzer=metadatavalid /archive.zip
+        env:
+          ARCHIVE: ${{ steps.metadata.outputs.archive }}
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.metadata.outputs.archive }}
+          path: artifacts/${{ steps.metadata.outputs.archive }}
+          retention-days: 5
+
+      # The unpacked plugin, for the e2e jobs to mount into Grafana.
+      - name: Upload dist
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.metadata.outputs.plugin-id }}-${{ steps.metadata.outputs.plugin-version }}
+          path: dist
+          retention-days: 5
