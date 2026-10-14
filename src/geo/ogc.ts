@@ -10,8 +10,6 @@ const tilesetRels = [
 ];
 
 export const byRel = (links: Link[], rels: string[]) => links.find((link) => rels.includes(link.rel ?? ''));
-const titleOf = (value: Record<string, unknown>, fallback: string) =>
-  String(value.title ?? value.id ?? value.name ?? fallback);
 const linksOf = (value: Record<string, unknown>) => (value.links as Link[] | undefined) ?? [];
 
 function withTileFormat(template: string, format: string) {
@@ -20,16 +18,22 @@ function withTileFormat(template: string, format: string) {
   return url.toString().replace(/%7B/gi, '{').replace(/%7D/gi, '}');
 }
 
-function parseTileset(raw: Record<string, unknown>, base: string): Tileset {
+function parseTileset(raw: Record<string, unknown>, base: string, fallbackTitle?: string): Tileset {
   const bbox = raw.boundingBox as Record<string, unknown> | undefined;
   const str = (value: unknown) => (typeof value === 'string' ? value : undefined);
+  const uri = str(raw.tileMatrixSetURI) ?? str(raw.tileMatrixSetDefinition);
+  const tileMatrixSetId = str(raw.tileMatrixSetId) ?? uri?.split(/[/#]/).filter(Boolean).pop()?.replace(/\?.*$/, '');
+  const self = byRel(linksOf(raw), ['self']);
+  const title = str(raw.title) ?? fallbackTitle ?? str(raw.id) ?? 'Untitled tileset';
   return {
-    id: String(raw.id ?? raw.title ?? base),
-    title: titleOf(raw, 'Untitled tileset'),
+    // A collection is usually listed once per tile matrix set with the same title and no id, so the self link
+    // tells them apart.
+    id: self ? absolute(self.href, base) : `${str(raw.id) ?? title}@${tileMatrixSetId ?? base}`,
+    title,
     description: str(raw.description),
     dataType: str(raw.dataType),
     crs: str(raw.crs),
-    tileMatrixSetId: str(raw.tileMatrixSetId),
+    tileMatrixSetId,
     boundingBox: bbox
       ? {
           lowerLeft: (bbox.lowerLeft as number[]) ?? [],
@@ -95,7 +99,7 @@ export async function discover(fetcher: Fetcher, endpoint: string) {
           const catalog = await fetchJson(fetcher, tilesUrl);
           sets.push(
             ...((catalog.tilesets as Array<Record<string, unknown>> | undefined) ?? []).map((raw) =>
-              parseTileset(raw, tilesUrl)
+              parseTileset(raw, tilesUrl, typeof collection.title === 'string' ? collection.title : undefined)
             )
           );
         }
@@ -126,13 +130,14 @@ export async function discover(fetcher: Fetcher, endpoint: string) {
 }
 
 // The tile URL template a tileset advertises, preferring Mapbox vector tiles.
-export function tileTemplateOf(tileset: Tileset) {
-  const items = tileset.links.filter((link) => link.rel === 'item');
+export function tileTemplateOf(links: Link[]) {
+  const items = links.filter((link) => link.rel === 'item');
   const mvt = items.find((link) => /mapbox|mvt|pbf/i.test(`${link.type ?? ''} ${link.title ?? ''} ${link.href}`));
   return (mvt ?? items[0])?.href;
 }
 
-export async function loadMatrixSet(fetcher: Fetcher, tileset: Tileset): Promise<MatrixSet> {
+// Also returns the tileset's own links: many servers only put the tile template in the tileset document.
+export async function loadMatrixSet(fetcher: Fetcher, tileset: Tileset): Promise<MatrixSet & { links: Link[] }> {
   let links = tileset.links;
   let inheritedCrs = tileset.crs;
   const self = byRel(links, ['self']);
@@ -150,6 +155,7 @@ export async function loadMatrixSet(fetcher: Fetcher, tileset: Tileset): Promise
   const rawCrs = raw.crs && typeof raw.crs === 'object' ? (raw.crs as { uri?: unknown }).uri : raw.crs;
   const matrices = (raw.tileMatrices as Array<Record<string, unknown>> | undefined) ?? [];
   return {
+    links,
     id: String(raw.id ?? link.title ?? 'Tile matrix set'),
     title: typeof raw.title === 'string' ? raw.title : link.title,
     crs: String(rawCrs ?? inheritedCrs ?? ''),

@@ -67,7 +67,11 @@ const SourceCard: React.FC<{
       } else {
         const tilesets = await discover(fetcher, url);
         setOptions(
-          tilesets.map((set) => ({ value: set.id, label: set.title, description: set.tileMatrixSetId ?? set.crs }))
+          tilesets.map((set) => ({
+            value: set.id,
+            label: set.tileMatrixSetId ? `${set.title} · ${set.tileMatrixSetId}` : set.title,
+            description: set.crs,
+          }))
         );
       }
     } catch (e) {

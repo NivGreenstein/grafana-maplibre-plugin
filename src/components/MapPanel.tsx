@@ -85,6 +85,8 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
     [options.headers, replaceVariables]
   );
   const headersRef = useRef(headers);
+  // Source titles by key, for tile error messages.
+  const titlesRef = useRef(new Map<string, string>());
   useEffect(() => {
     headersRef.current = headers;
   }, [headers]);
@@ -113,7 +115,9 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
       // One message per source is enough to explain an empty area.
       if (!reported.has(id)) {
         reported.add(id);
-        setTileErrors((list) => [...list, `${id.replace(/^src:p\w+:/, '')}: ${event.error?.message ?? event.error}`]);
+        const title = titlesRef.current.get(id.replace(/^src:/, '')) ?? id;
+        const detail = event.error?.message ?? String(event.error);
+        setTileErrors((list) => [...list, `${title}: tile request failed (${detail})`]);
       }
     });
     mapRef.current = map;
@@ -175,6 +179,7 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
         result.layers
           .filter((layer) => layer.kind === 'vector')
           .forEach((layer) => registerVector(layer.key, fetcher, namesChanged));
+        titlesRef.current = new Map(result.layers.map((layer) => [layer.key, layer.title]));
         setResolved(result.layers);
         setErrors(result.errors);
       }

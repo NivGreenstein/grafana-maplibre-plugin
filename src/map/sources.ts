@@ -189,7 +189,7 @@ async function resolveOne(ctx: Context, layer: SourceLayer): Promise<Resolved[]>
           if (quad.quad !== ctx.worldCrs) {
             throw new Error(`${tileset.title} is tiled in ${quad.quad} and cannot be drawn on a ${ctx.worldCrs} map.`);
           }
-          const template = tileTemplateOf(tileset);
+          const template = tileTemplateOf(matrixSet.links) ?? tileTemplateOf(tileset.links);
           if (!template) {
             throw new Error(`${tileset.title} advertises no tile URL template.`);
           }
@@ -198,7 +198,7 @@ async function resolveOne(ctx: Context, layer: SourceLayer): Promise<Resolved[]>
             ...base,
             kind: 'vector',
             key: `${key}:${tileset.id}`,
-            title: tileset.title,
+            title: tileset.tileMatrixSetId ? `${tileset.title} · ${tileset.tileMatrixSetId}` : tileset.title,
             tiles: template
               .replace(/\{tileMatrix\}/gi, `${quad.prefix}{z}`)
               .replace(/\{tileCol\}/gi, '{x}')
