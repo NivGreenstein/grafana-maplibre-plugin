@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "webpack -c ./webpack.config.ts --env production",
+    "package": "bash scripts/package.sh",
     "dev": "webpack -w -c ./webpack.config.ts --env development",
     "test": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
