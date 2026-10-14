@@ -257,6 +257,9 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
     ...errors,
     ...tileErrors,
   ].filter(Boolean);
+  // Closing hides the messages shown; a new or changed message shows again.
+  const messageKey = messages.join('\n');
+  const [dismissed, setDismissed] = useState('');
 
   return (
     <div className={styles.wrapper} style={{ width, height }}>
@@ -265,16 +268,9 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
         style={{ width, height, background: theme.visualization.getColorByName(options.background ?? 'white') }}
       />
       {activeCrs && <div className={styles.badge}>{quadLabel[activeCrs]}</div>}
-      {messages.length > 0 && (
+      {messages.length > 0 && messageKey !== dismissed && (
         <div className={styles.messages}>
-          <Alert
-            severity="warning"
-            title="Map"
-            onRemove={() => {
-              setErrors([]);
-              setTileErrors([]);
-            }}
-          >
+          <Alert severity="warning" title="Map" onRemove={() => setDismissed(messageKey)}>
             {messages.map((message) => (
               <div key={message}>{message}</div>
             ))}

@@ -29,3 +29,12 @@ test('opens the panel editor from the dashboard without errors', async ({
   await expect(page.getByText('An unexpected error happened')).toHaveCount(0);
   await expect(page.locator('canvas.maplibregl-canvas')).toHaveCount(1);
 });
+
+test('closes the shared-CRS warning', async ({ gotoDashboardPage, readProvisionedDashboard, page }) => {
+  const dashboard = await readProvisionedDashboard({ fileName: 'maplibre-3857.json' });
+  await gotoDashboardPage(dashboard);
+  const warning = page.getByText(/MapLibre's world CRS is shared/);
+  await expect(warning).toBeVisible({ timeout: 15000 });
+  await page.getByRole('alert', { name: 'Map' }).getByRole('button', { name: 'Close alert' }).click();
+  await expect(warning).toHaveCount(0);
+});
