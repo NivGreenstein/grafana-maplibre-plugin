@@ -1,0 +1,185 @@
+{
+  "uid": "maplibre-4326",
+  "title": "MapLibre \u00b7 EPSG:4326",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "GIBS WMTS (plate carr\u00e9e regrid) + markers",
+      "type": "nivgreen-maplibre-panel",
+      "options": {
+        "projection": "WorldCRS84Quad",
+        "view": {
+          "mode": "fit",
+          "latitude": 0,
+          "longitude": 0,
+          "zoom": 1
+        },
+        "showZoom": true,
+        "showScale": true,
+        "tileDebug": false,
+        "tooltip": "hover",
+        "sources": [
+          {
+            "id": "gibs",
+            "name": "NASA GIBS Blue Marble",
+            "kind": "wmts",
+            "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
+            "selected": [
+              "BlueMarble_ShadedRelief_Bathymetry"
+            ],
+            "visible": true,
+            "opacity": 1
+          }
+        ],
+        "headers": [],
+        "dataLayers": [
+          {
+            "id": "m1",
+            "name": "Cities",
+            "type": "markers",
+            "visible": true,
+            "location": {
+              "mode": "auto"
+            },
+            "markers": {
+              "color": "orange",
+              "colorField": "value",
+              "size": 6,
+              "sizeField": "value",
+              "minSize": 4,
+              "maxSize": 16,
+              "opacity": 0.85
+            },
+            "heatmap": {
+              "radius": 20,
+              "intensity": 1,
+              "opacity": 0.8
+            }
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "name,lat,lon,value\nTel Aviv,32.08,34.78,90\nJerusalem,31.77,35.21,60\nHaifa,32.79,34.99,40\nEilat,29.56,34.95,15\nParis,48.85,2.35,70\nNew York,40.71,-74.0,100\nTokyo,35.68,139.69,85\nSydney,-33.87,151.21,30"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "trlxrdZVk"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "title": "GIBS WMTS + heatmap, tile grid",
+      "type": "nivgreen-maplibre-panel",
+      "options": {
+        "projection": "WorldCRS84Quad",
+        "view": {
+          "mode": "fit",
+          "latitude": 0,
+          "longitude": 0,
+          "zoom": 1
+        },
+        "showZoom": true,
+        "showScale": true,
+        "tileDebug": true,
+        "tooltip": "hover",
+        "sources": [
+          {
+            "id": "gibs",
+            "name": "NASA GIBS Blue Marble",
+            "kind": "wmts",
+            "url": "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
+            "selected": [
+              "BlueMarble_ShadedRelief_Bathymetry"
+            ],
+            "visible": true,
+            "opacity": 1
+          }
+        ],
+        "headers": [],
+        "dataLayers": [
+          {
+            "id": "h1",
+            "name": "Heat",
+            "type": "heatmap",
+            "visible": true,
+            "location": {
+              "mode": "auto"
+            },
+            "markers": {
+              "color": "orange",
+              "colorField": "value",
+              "size": 6,
+              "sizeField": "value",
+              "minSize": 4,
+              "maxSize": 16,
+              "opacity": 0.85
+            },
+            "heatmap": {
+              "weightField": "value",
+              "radius": 30,
+              "intensity": 1,
+              "opacity": 0.8
+            }
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "A",
+          "scenarioId": "csv_content",
+          "csvContent": "name,lat,lon,value\nTel Aviv,32.08,34.78,90\nJerusalem,31.77,35.21,60\nHaifa,32.79,34.99,40\nEilat,29.56,34.95,15\nParis,48.85,2.35,70\nNew York,40.71,-74.0,100\nTokyo,35.68,139.69,85\nSydney,-33.87,151.21,30"
+        }
+      ]
+    }
+  ]
+}
