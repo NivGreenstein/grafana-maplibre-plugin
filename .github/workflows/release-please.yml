@@ -1,0 +1,46 @@
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+      tag-name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          # A PAT lets the release PR trigger CI; the default token works but its PRs do not run workflows.
+          token: ${{ secrets.GH_PAT || github.token }}
+
+  build:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release-created == 'true' }}
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
+  attach:
+    name: Attach the package to the release
+    needs: [release-please, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.archive }}
+
+      - name: Upload to release
+        run: gh release upload "$TAG" "$ARCHIVE" --clobber --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag-name }}
+          ARCHIVE: ${{ needs.build.outputs.archive }}

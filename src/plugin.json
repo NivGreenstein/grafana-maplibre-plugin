@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "panel",
+  "name": "MapLibre CRS84",
+  "id": "nivgreen-maplibre-panel",
+  "info": {
+    "keywords": ["panel", "map", "maplibre", "wmts", "csw", "epsg:4326", "geo"],
+    "description": "MapLibre map in EPSG:4326 (WorldCRS84Quad) or EPSG:3857, with WMTS, MapColonies CSW, OGC API Tiles, raster and MVT sources, and query-data layers.",
+    "author": {
+      "name": "Nivgreen"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=13.2.0",
+    "plugins": []
+  }
+}
