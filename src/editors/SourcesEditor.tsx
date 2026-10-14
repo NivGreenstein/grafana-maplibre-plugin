@@ -179,14 +179,12 @@ const SourceCard: React.FC<{
           <Input value={layer.styleUrl ?? ''} onChange={(e) => update({ styleUrl: e.currentTarget.value })} />
         </Field>
       )}
-      <Stack gap={2} alignItems="center">
-        <Field label="Visible">
-          <Switch value={layer.visible !== false} onChange={(e) => update({ visible: e.currentTarget.checked })} />
-        </Field>
-        <Field label="Opacity">
-          <Slider min={0} max={1} step={0.05} value={layer.opacity ?? 1} onChange={(opacity) => update({ opacity })} />
-        </Field>
-      </Stack>
+      <Field label="Opacity">
+        <Slider min={0} max={1} step={0.05} value={layer.opacity ?? 1} onChange={(opacity) => update({ opacity })} />
+      </Field>
+      <Field label="Visible">
+        <Switch value={layer.visible !== false} onChange={(e) => update({ visible: e.currentTarget.checked })} />
+      </Field>
     </Stack>
   );
 };

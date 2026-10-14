@@ -26,7 +26,8 @@ type Props = PanelProps<MapOptions>;
 
 const getStyles = (theme: GrafanaTheme2) => ({
   wrapper: css({ position: 'relative', overflow: 'hidden' }),
-  map: css({ position: 'absolute', inset: 0, background: theme.colors.background.canvas }),
+  // MapLibre's CSS makes the container position: relative, so it is sized explicitly.
+  map: css({ background: theme.colors.background.canvas }),
   badge: css({
     position: 'absolute',
     left: theme.spacing(1),
@@ -250,7 +251,7 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
 
   return (
     <div className={styles.wrapper} style={{ width, height }}>
-      <div ref={container} className={styles.map} />
+      <div ref={container} className={styles.map} style={{ width, height }} />
       {activeCrs && <div className={styles.badge}>{quadLabel[activeCrs]}</div>}
       {messages.length > 0 && (
         <div className={styles.messages}>
