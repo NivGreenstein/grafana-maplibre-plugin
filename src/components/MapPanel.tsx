@@ -148,7 +148,12 @@ export const MapPanel: React.FC<Props> = ({ options, data, width, height, replac
     controls.forEach((control) =>
       map.addControl(control, control instanceof ScaleControl ? 'bottom-right' : 'top-left')
     );
-    return () => controls.forEach((control) => map.removeControl(control));
+    return () => {
+      // map.remove() already detached them when the map itself is gone.
+      if (mapRef.current === map) {
+        controls.forEach((control) => map.removeControl(control));
+      }
+    };
   }, [mapVersion, options.showZoom, options.showScale]);
 
   useEffect(() => {
