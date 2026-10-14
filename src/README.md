@@ -1,50 +1,37 @@
-<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin. Uncomment and replace the content here before publishing.
+# MapLibre CRS84 panel
 
-Remove any remaining comments before publishing as these may be displayed on Grafana.com -->
+A Grafana map panel drawn by [`@nivgreen/maplibre-gl-js-crs84`](https://www.npmjs.com/package/@nivgreen/maplibre-gl-js-crs84). This MapLibre GL JS fork works natively in the OGC **WorldCRS84Quad** tile matrix set (EPSG:4326). It can also work in **WebMercatorQuad** (EPSG:3857).
 
-# Maplibre
+## Features
 
-<!-- To help maximize the impact of your README and improve usability for users, we propose the following loose structure:
+- **Projection:** EPSG:4326 or EPSG:3857, chosen per panel. EPSG:4326 rasters are reprojected to Web Mercator in the browser with [`@nivgreen/maplibre-gl-raster-reprojection`](https://www.npmjs.com/package/@nivgreen/maplibre-gl-raster-reprojection).
+- **Tile sources**, stacked in order with the first at the bottom:
+  - **Raster tile template:** `…/{z}/{x}/{y}.png` in EPSG:4326 or EPSG:3857.
+  - **WMTS capabilities:** load the document and pick its layers. EPSG:4326 matrix sets that are not WorldCRS84Quad, such as NASA GIBS' 512 px tiles, are resampled onto the map grid.
+  - **MapColonies CSW:** pages through the `mc:MCRasterRecord` raster catalog. Each record's `WMTS` link supplies the capabilities and layer.
+  - **Vector tile template (MVT):** EPSG:4326 or EPSG:3857, drawn with an optional MapLibre style URL. Without one, features are colored by geometry type.
+  - **OGC API Tiles:** discovers vector tilesets from a landing page by following its advertised links.
+- **Data layers:** query results drawn as **markers** or a **heatmap**, like Geomap.
+  - Location comes from latitude/longitude fields (found automatically or picked) or from a geohash field.
+  - Marker color comes from the field's color scheme and thresholds (Standard options), and size from a numeric field.
+  - Tooltips show the row under the cursor, on hover or on click.
+- **Request headers:** Postman-style header rows, such as `x-api-key`, sent with every tile, capabilities and catalog request. They can be limited to one host, and values may use dashboard variables such as `${api_key}`.
 
-**BEFORE YOU BEGIN**
-- Ensure all links are absolute URLs so that they will work when the README is displayed within Grafana and Grafana.com
-- Be inspired ✨
-  - [grafana-polystat-panel](https://github.com/grafana/grafana-polystat-panel)
-  - [volkovlabs-variable-panel](https://github.com/volkovlabs/volkovlabs-variable-panel)
+## One projection per dashboard
 
-**ADD SOME BADGES**
+The fork's world CRS is a page-wide setting, so every map of this panel on a dashboard is drawn in the same projection. The first map shown sets it. A panel set to the other projection shows a warning and is drawn in the shared one. Rasters in EPSG:4326 are reprojected when that is Web Mercator.
 
-Badges convey useful information at a glance for users whether in the Catalog or viewing the source code. You can use the generator on [Shields.io](https://shields.io/badges/dynamic-json-badge) together with the Grafana.com API
-to create dynamic badges that update automatically when you publish a new version to the marketplace.
+Vector tiles and EPSG:3857 rasters cannot be reprojected. A panel that needs them in the other projection reports an error for that source.
 
-- For the URL parameter use `https://grafana.com/api/plugins/your-plugin-id`.
-- Example queries:
-  - Downloads: `$.downloads`
-  - Catalog Version: `$.version`
-  - Grafana Dependency: `$.grafanaDependency`
-  - Signature Type: `$.versionSignatureType`
-- Optionally, for the logo parameter use `grafana`.
+## Request headers and secrets
 
-Full example: ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.version&url=https://grafana.com/api/plugins/grafana-polystat-panel&label=Marketplace&prefix=v&color=F47A20)
+Header rows are stored in the dashboard JSON, so anyone who can view the dashboard JSON can read them. To keep a value out of the panel options, put it in a dashboard variable (for example a hidden constant) and write `${variable}` as the value.
 
-Consider other [badges](https://shields.io/badges) as you feel appropriate for your project.
+A custom header makes cross-origin requests preflighted. The tile service must list the header in `Access-Control-Allow-Headers`, or the requests fail. Give the header a host so it is only sent where it is accepted.
 
-## Overview / Introduction
-Provide one or more paragraphs as an introduction to your plugin to help users understand why they should use it.
-
-Consider including screenshots:
-- in [plugin.json](https://grafana.com/developers/plugin-tools/reference/plugin-json#info) include them as relative links.
-- in the README ensure they are absolute URLs.
+The reprojection plugin fetches its source tiles itself. Those requests get headers through a `fetch` wrapper that only touches URLs under a reprojected source's tile template, so Grafana's own requests are never changed. If two panels reproject the same URL with different header values, the last panel loaded wins.
 
 ## Requirements
-List any requirements or dependencies they may need to run the plugin.
 
-## Getting Started
-Provide a quick start on how to configure and use the plugin.
-
-## Documentation
-If your project has dedicated documentation available for users, provide links here. For help in following Grafana's style recommendations for technical documentation, refer to our [Writer's Toolkit](https://grafana.com/docs/writers-toolkit/).
-
-## Contributing
-Do you want folks to contribute to the plugin or provide feedback through specific means? If so, tell them how!
--->
+- Grafana 13.2 or later.
+- Tile services must allow CORS requests from the Grafana origin, because tiles are fetched by the browser.
