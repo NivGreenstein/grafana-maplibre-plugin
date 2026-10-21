@@ -85,8 +85,8 @@
     "@nivgreen/maplibre-gl-js-crs84": "^6.7.0-rc.1",
     "@nivgreen/maplibre-gl-raster-reprojection": "^1.1.0",
     "ol": "^10.11.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "packageManager": "npm@11.6.2"
 }
